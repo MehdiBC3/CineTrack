@@ -42,7 +42,7 @@ CineTrack/
 ## Avancement
 
 - [x] **Étape 1** – Structure du dépôt, branches `main` / `develop`, `.gitignore`
-- [ ] **Étape 2** – API back (Node/Express + PostgreSQL + TMDB)
+- [x] **Étape 2** – API back (Node/Express + PostgreSQL + TMDB)
 - [ ] **Étape 3** – Front (React + Nginx)
 - [ ] **Étape 4** – Docker : Dockerfiles multi-stage + `docker-compose.yml`
 - [ ] **Étape 5** – Kubernetes : Deployments, Services, ConfigMap, Secret, PV/PVC
@@ -54,6 +54,41 @@ CineTrack/
 - `main` : branche protégée, représente la production (déploiement sur tag `vX.Y.Z`)
 - `develop` : branche de travail principale
 - `feature/<nom>` : une branche par fonctionnalité, mergée dans `develop`
+
+## API back
+
+| Méthode | Route | Description |
+|---|---|---|
+| GET | `/api/health` | Le service répond (liveness) |
+| GET | `/api/ready` | Le service et la base répondent (readiness) |
+| GET | `/api/trending` | Films et séries tendance de la semaine (TMDB) |
+| GET | `/api/search?q=...` | Recherche de films et séries (TMDB) |
+| GET | `/api/watchlist[?status=...]` | Liste des titres suivis |
+| POST | `/api/watchlist` | Ajoute un titre (`tmdb_id`, `media_type`, `title`, …) |
+| PATCH | `/api/watchlist/:id` | Change le statut (`to_watch`, `watching`, `watched`) et/ou la note (1–10) |
+| DELETE | `/api/watchlist/:id` | Retire un titre |
+| GET | `/api/stats` | Statistiques (par statut, par type, note moyenne) |
+
+La table `watchlist` est créée automatiquement au démarrage de l'API.
+
+### Configuration
+
+Toute la configuration passe par des variables d'environnement (voir `.env.example`).
+Les valeurs sensibles (`DB_PASSWORD`, `TMDB_API_KEY`) ne sont jamais commitées : elles seront fournies par un fichier `.env` en dev et par un `Secret` Kubernetes en production.
+
+### Lancer l'API en local (sans Docker)
+
+Prérequis : Node.js 20+ et une base PostgreSQL accessible.
+
+```bash
+cd backend
+npm install
+npm test
+# Windows PowerShell : définir les variables puis lancer
+$env:DB_PASSWORD="..."; $env:TMDB_API_KEY="..."; npm start
+```
+
+> À partir de l'étape 4, toute l'application se lancera avec une seule commande : `docker compose up`.
 
 ## Sources
 
